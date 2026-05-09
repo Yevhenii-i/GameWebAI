@@ -1,13 +1,20 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+from app.api import ai, games
+from app.db.database import create_db_and_tables
 
-app = FastAPI()
+# This runs once when the server starts up
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
 
+app = FastAPI(title="Card Game AI Backend", lifespan=lifespan)
+
+# Include the routers
+app.include_router(ai.router, prefix="/ai", tags=["AI Integration"])
+app.include_router(games.router, prefix="/games", tags=["Data Collection"])
 
 @app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+def read_root():
+    return {"status": "Server is running", "game": "Turn-Based Card AI"}
