@@ -5,13 +5,9 @@ import os
 
 load_dotenv()
 database_url = os.getenv('DATABASE_URL')
-# For local development, this creates a file called 'database.db' in your project root.
-# For production, change this to your PostgreSQL URL: "postgresql://user:pass@localhost/dbname"
-#sqlite_file_name = "database.db"
-sqlite_url = "database_url"
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
+connect_args = {}
+engine = create_engine(database_url, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)

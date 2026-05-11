@@ -6,6 +6,9 @@ from app.schemas.game_schemas import StateSnapshot
 from app.services.vectorizer import vectorize_state
 from app.services.action_map import ACTION_SPACE, get_action_string
 from app.models.neural_net import GameAI
+from app.db.database import get_training_games_raw, get_reinforcement_games_raw
+from app.services.trainer import train_from_db
+from app.services.rl_trainer import train_self_play_rl
 from dotenv import load_dotenv
 import os
 
@@ -71,3 +74,43 @@ async def get_ai_move(state: StateSnapshot):
     best_action_string = get_action_string(best_action_index)
 
     return {"status": "success", "chosen_action": best_action_string}
+
+@router.post("/run_training")
+async def run_training():
+    print("Loading games from database.db...")
+
+    try:
+        raw_matches = get_training_games_raw()
+    except Exception as e:
+        print(f"Database error: {e}")
+        return {"status": "error", "error": str(e)}
+
+    count = len(raw_matches)
+    if count == 0:
+        print("Database is empty. Upload some games from Godot first!")
+        return {"status": "error", "error": "Database is empty!"}
+
+    print(f"Found {count} matches. Training in progress...")
+
+    train_from_db(raw_matches)
+    return{"status": "success"}
+
+@router.post("/run_reinforcement")
+async def run_reinforcement():
+    print("Loading games from database.db...")
+
+    try:
+        raw_matches = get_reinforcement_games_raw()
+    except Exception as e:
+        print(f"Database error: {e}")
+        return {"status": "error", "error": str(e)}
+
+    count = len(raw_matches)
+    if count == 0:
+        print("Database is empty. Upload some games from Godot first!")
+        return {"status": "error", "error": "Database is empty!"}
+
+    print(f"Found {count} matches. Reinforcement in progress...")
+
+    train_self_play_rl(raw_matches)
+    return {"status": "success"}
