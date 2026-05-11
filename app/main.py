@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 from app.api import ai, games
 from app.db.database import create_db_and_tables
 
-# This runs once when the server starts up
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_db_and_tables()
@@ -11,7 +10,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Card Game AI Backend", lifespan=lifespan)
 
-# Include the routers
 app.include_router(ai.router, prefix="/ai", tags=["AI Integration"])
 app.include_router(games.router, prefix="/games", tags=["Data Collection"])
 

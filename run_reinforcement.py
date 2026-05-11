@@ -23,7 +23,6 @@ def main():
 
     print(f"Found {count} matches. Reinforcement in progress...")
 
-    # This calls the trainer function we wrote earlier
     train_self_play_rl(raw_matches)
 
 

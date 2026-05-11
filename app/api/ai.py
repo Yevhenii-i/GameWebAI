@@ -6,12 +6,16 @@ from app.schemas.game_schemas import StateSnapshot
 from app.services.vectorizer import vectorize_state
 from app.services.action_map import ACTION_SPACE, get_action_string
 from app.models.neural_net import GameAI
+from dotenv import load_dotenv
+import os
 
 router = APIRouter()
-
+load_dotenv()
+ai_version_in_use = os.getenv('AI_VERSION_IN_USE')
 model = GameAI()
+
 try:
-    model.load_state_dict(torch.load("app/services/ml_models/experimental_v5.pth"))
+    model.load_state_dict(torch.load("app/services/ml_models/" + ai_version_in_use + ".pth"))
     model.eval()
 except:
     print("No trained model found.")

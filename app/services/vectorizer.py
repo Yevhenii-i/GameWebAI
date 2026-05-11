@@ -1,7 +1,10 @@
 import numpy as np
 from typing import Dict, Any
+from dotenv import load_dotenv
+import os
 
-NUM_UNIQUE_CARDS = 11
+load_dotenv()
+NUM_UNIQUE_CARDS = int(os.getenv('NUM_UNIQUE_CARDS'))
 
 def vectorize_state(snapshot: Dict[str, Any]) -> np.ndarray:
     scalars = [

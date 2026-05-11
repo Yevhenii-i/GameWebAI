@@ -8,7 +8,7 @@ class GameRecord(SQLModel, table=True):
     game_type: Optional[str] = Field(default="training", nullable=True)
     player_score: int
     opponent_score: int
-    winner: int  # 0 for first participant, 1 for second participant
+    winner: int  # 0 for first participant, 1 for second participant, 2 for draw
     total_rounds: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

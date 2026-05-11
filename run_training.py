@@ -23,7 +23,6 @@ def main():
 
     print(f"Found {count} matches. Training in progress...")
 
-    # This calls the trainer function we wrote earlier
     train_from_db(raw_matches)
 
 

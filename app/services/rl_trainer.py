@@ -4,19 +4,22 @@ from torch.distributions import Categorical
 from app.models.neural_net import GameAI
 from app.services.vectorizer import vectorize_state
 from app.services.action_map import get_action_index
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+ai_version_in_use = os.getenv('AI_VERSION_IN_USE')
+ai_version_train = os.getenv('AI_VERSION_TRAINING')
 
 def train_self_play_rl(raw_matches):
     model = GameAI()
 
-    # Load your Behavioral Cloning weights as the starting point!
     try:
-        model.load_state_dict(torch.load("app/services/ml_models/experimental_v5.pth"))
+        model.load_state_dict(torch.load("app/services/ml_models/" + ai_version_in_use + ".pth"))
         print("Loaded BC model. Transitioning to RL...")
     except:
         print("Starting RL from scratch (random weights).")
 
-    # Use a much smaller learning rate for RL to prevent catastrophic forgetting
     optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
     model.train()
@@ -36,10 +39,8 @@ def train_self_play_rl(raw_matches):
             continue
 
         for turn in game["history"]:
-            # Who took this action? Did they ultimately win or lose?
             actor_id = turn["active_actor"]
 
-            # Sparse Reward: +1 if this actor won the game, -1 if they lost
             reward = 1.0 if actor_id == winner_id else -1.0
 
             try:
@@ -48,32 +49,26 @@ def train_self_play_rl(raw_matches):
             except Exception:
                 continue
 
-            # 1. Forward Pass
             state_tensor = torch.tensor([v_state], dtype=torch.float32)
             logits = model(state_tensor)
 
-            # 2. Create a Probability Distribution
             dist = Categorical(logits=logits)
 
-            # 3. Calculate the Log Probability of the action that was actually taken
             action_tensor = torch.tensor([action_idx], dtype=torch.long)
             log_prob = dist.log_prob(action_tensor)
 
-            # 4. Policy Gradient Math: Multiply by reward and negate for gradient ascent
             loss = -(log_prob * reward)
-            loss.backward()  # Accumulate gradients
+            loss.backward()
 
             total_loss += loss.item()
             batch_count += 1
 
-            # Update weights every 256 actions to keep memory usage low
             if batch_count % 256 == 0:
                 optimizer.step()
                 optimizer.zero_grad()
 
-    # Final step for any remaining gradients
     if batch_count % 256 != 0:
         optimizer.step()
 
     print(f"RL Training pass complete. Average Loss metric: {total_loss / max(1, batch_count):.4f}")
-    torch.save(model.state_dict(), "app/services/ml_models/experimental_v5_1.pth")
+    torch.save(model.state_dict(), "app/services/ml_models/" + ai_version_train + ".pth")

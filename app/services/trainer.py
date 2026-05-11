@@ -5,7 +5,11 @@ import numpy as np
 from app.models.neural_net import GameAI
 from app.services.vectorizer import vectorize_state
 from app.services.action_map import get_action_index
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+ai_version_train = os.getenv('AI_VERSION_TRAINING')
 
 def train_from_db(raw_matches):
     model = GameAI()
@@ -21,7 +25,7 @@ def train_from_db(raw_matches):
         1.5,  # get_gold_4
         1.0,  # get_card_1
         1.5,  # get_card_2
-        2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0  # play_cards (Very rare/important)
+        2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0  # play_cards ()
     ], dtype=torch.float32)
 
     criterion = nn.CrossEntropyLoss(weight=weights)
@@ -63,5 +67,5 @@ def train_from_db(raw_matches):
         if epoch % 10 == 0:
             print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
 
-    torch.save(model.state_dict(), "app/services/ml_models/experimental_v5.pth")
-    print("Model trained and saved to app/services/ml_models/experimental_v5.pth")
+    torch.save(model.state_dict(), "app/services/ml_models/" + ai_version_train + ".pth")
+    print("Model trained and saved to app/services/ml_models/" + ai_version_train + ".pth")
