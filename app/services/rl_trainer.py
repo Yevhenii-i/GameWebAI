@@ -15,7 +15,7 @@ def train_self_play_rl(raw_matches):
     model = GameAI()
 
     try:
-        model.load_state_dict(torch.load("app/services/ml_models/" + ai_version_in_use + ".pth"))
+        model.load_state_dict(torch.load("app/ml_models/" + ai_version_in_use + ".pth"))
         print("Loaded BC model. Transitioning to RL...")
     except:
         print("Starting RL from scratch (random weights).")
@@ -71,4 +71,4 @@ def train_self_play_rl(raw_matches):
         optimizer.step()
 
     print(f"RL Training pass complete. Average Loss metric: {total_loss / max(1, batch_count):.4f}")
-    torch.save(model.state_dict(), "app/services/ml_models/" + ai_version_train + ".pth")
+    torch.save(model.state_dict(), "app/ml_models/" + ai_version_train + ".pth")

@@ -38,7 +38,7 @@ def train_from_db(raw_matches):
 
         for turn in game["history"]:
 
-            # if winner_id == turn["active_actor"] and game["player_score"] != game["opponent_score"]:
+            if winner_id == turn["active_actor"] and game["player_score"] != game["opponent_score"]:
                 try:
 
                     v_state = vectorize_state(turn["state_before"])
@@ -67,5 +67,5 @@ def train_from_db(raw_matches):
         if epoch % 10 == 0:
             print(f"Epoch {epoch}, Loss: {loss.item():.4f}")
 
-    torch.save(model.state_dict(), "app/services/ml_models/" + ai_version_train + ".pth")
-    print("Model trained and saved to app/services/ml_models/" + ai_version_train + ".pth")
+    torch.save(model.state_dict(), "app/ml_models/" + ai_version_train + ".pth")
+    print("Model trained and saved to app/ml_models/" + ai_version_train + ".pth")

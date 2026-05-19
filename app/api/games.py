@@ -10,7 +10,6 @@ router = APIRouter()
 @router.post("/save")
 async def save_game(payload: GameSavePayload, session: Session = Depends(get_session)):
     try:
-        # Convert the Pydantic payload from Godot into an SQLModel database row
         new_game = GameRecord(
             game_type = payload.game_type,
             player_score=payload.player_score,
@@ -20,10 +19,9 @@ async def save_game(payload: GameSavePayload, session: Session = Depends(get_ses
             history=payload.history
         )
 
-        # Add to session and commit to the database
         session.add(new_game)
         session.commit()
-        session.refresh(new_game)  # Refreshes to get the newly generated ID
+        session.refresh(new_game)
 
         return {"status": "success", "game_id": new_game.id}
 
