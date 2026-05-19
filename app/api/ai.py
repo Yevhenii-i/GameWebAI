@@ -74,40 +74,48 @@ async def get_ai_move_reinf(state: StateSnapshot):
 
 @router.post("/run_training")
 async def run_training(background_tasks: BackgroundTasks):
-    print("Loading games from database.db...")
-
-    try:
-        raw_matches = get_training_games_raw()
-    except Exception as e:
-        print(f"Database error: {e}")
-        return {"status": "error", "error": str(e)}
-
-    count = len(raw_matches)
-    if count == 0:
-        print("Database is empty. Upload some games from Godot first!")
-        return {"status": "error", "error": "Database is empty!"}
-
-    print(f"Found {count} matches. Training in progress...")
-
-    background_tasks.add_task(train_from_db, raw_matches)
+    background_tasks.add_task(run_training_flow)
     return{"status": "success"}
 
 @router.post("/run_reinforcement")
 async def run_reinforcement(background_tasks: BackgroundTasks):
-    print("Loading games from database.db...")
+    background_tasks.add_task(run_reinforcement_flow)
+    return {"status": "success"}
 
+def run_training_flow():
+    print("[Background] Loading matches from Database...")
     try:
-        raw_matches = get_reinforcement_games_raw()
+        raw_matches = get_training_games_raw()
     except Exception as e:
-        print(f"Database error: {e}")
-        return {"status": "error", "error": str(e)}
+        print(f"[Background] Database error: {e}")
+        return
 
     count = len(raw_matches)
     if count == 0:
-        print("Database is empty. Upload some games from Godot first!")
-        return {"status": "error", "error": "Database is empty!"}
+        print("[Background] Warning: Database is empty!")
+        return
 
-    print(f"Found {count} matches. Reinforcement in progress...")
+    print(f"[Background] Found {count} matches. Training in progress...")
+    try:
+        train_from_db(raw_matches)
+    except Exception as e:
+        print(f"[Background] Training failed: {e}")
 
-    background_tasks.add_task(train_self_play_rl, raw_matches)
-    return {"status": "success"}
+def run_reinforcement_flow():
+    print("[Background] Loading matches from Database...")
+    try:
+        raw_matches = get_reinforcement_games_raw()
+    except Exception as e:
+        print(f"[Background] Database error: {e}")
+        return
+
+    count = len(raw_matches)
+    if count == 0:
+        print("[Background] Warning: Database is empty!")
+        return
+
+    print(f"[Background] Found {count} matches. Reinforcement in progress...")
+    try:
+        train_self_play_rl(raw_matches)
+    except Exception as e:
+        print(f"[Background] Training failed: {e}")
